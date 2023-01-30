@@ -15,27 +15,62 @@ let others={}
 
 const initiate=async()=>{
     // fetchEx()
-    fetchSubs()
+    // fetchSubs()
 }
 
 const fetchSubs=async()=>{
-    let headers=await createHeaders(allCookies,others,
-        'https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=20&offset={0}&sort=desc&field=last_activity&type=expired',
-        "https://onlyfans.com/my/subscribers/expired")
+    console.log('Running fetchsubs');
 
-    const res=await fetch(
-        'https://onlyfans.com/my/subscribers/expired',
-        {headers:headers}
+    let u = 'https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=20&offset=0&sort=desc&field=last_activity&type=expired'
+
+    // let headers=await createHeaders(allCookies,others,
+    //     u,"https://onlyfans.com/my/subscribers/expired")
+
+    // let headers2=await createHeaders(allCookies,others,
+    //     u,"https://onlyfans.com/my/subscribers/expired")
+
+    let alU='https://onlyfans.com/api2/v2/subscriptions/count/all'
+
+    let headers2=await createHeaders(allCookies,others,
+        alU,"https://onlyfans.com/my/subscribers/expired")
+    
+    console.log('About to run fetchsubs');
+
+    fetch(
+        alU,
+        {headers:headers2}
     )
+    .then(res=>res.json())
+    .then(result=>{
+        console.log('All subs',result);
+        const expiredCount=result.subscribers.expired
+        getExpired(expiredCount)
+        fetchEx()
+    })
 
-    console.log(res);
-
-    fetchEx()
+    // fetchEx()
 
     // let result=await res.json()
     // console.log(result);
 
 }
+
+const getExpired=async (count)=>{
+    let url = `https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=20&offset=${count}&sort=desc&field=last_activity&type=expired`
+    let headers = await createHeaders(allCookies,others,url, 'https://onlyfans.com/my/subscribers/expired')
+
+    fetch(
+        url,
+        {headers:headers}
+    )
+    .then(res=>res.json())
+    .then(result=>{
+        console.log('Only expired');
+        console.log(result);
+    })
+}
+
+
 
 const fetchEx=async()=>{
     let headers=await createHeaders(allCookies,others,'https://onlyfans.com/api2/v2/subscriptions/count/all',"https://onlyfans.com/my/subscribers/expired")
@@ -46,7 +81,7 @@ const fetchEx=async()=>{
         {headers:headers}
         ))
 
-    console.log('Zachary',res);
+    console.log('Fetch 2',res);
 }
 
 async function createHeaders(cookieObj,othObj,url,ref) {
@@ -76,7 +111,6 @@ async function createHeaders(cookieObj,othObj,url,ref) {
     const checksum = response['checksum_indexes'].reduce((total, current) => total += hash[current].charCodeAt(0), 0) + response['checksum_constant'];
 
     const sign = [prefix, hash, checksum.toString(16), suffix].join(':');
-    console.log(sign);
 
     let cookieString=''
 
@@ -176,7 +210,6 @@ let alra=false
 let xbc,sign,time,app_token
 
 chrome.webRequest.onBeforeSendHeaders.addListener(async n => {
-    console.log(n.url);
     xbc = n.requestHeaders.find(u => u.name.toLowerCase() === "x-bc").value
     app_token = n.requestHeaders.find(u => u.name.toLowerCase() === "app-token").value
     sign=n.requestHeaders.find(u => u.name.toLowerCase() === "sign").value
@@ -184,22 +217,20 @@ chrome.webRequest.onBeforeSendHeaders.addListener(async n => {
 
     others["xbc"]=xbc
     others["userAgent"]=navigator.userAgent
-
     
 
+
     // execute(app_token,sign,time,allCookies.auth_id,xbc)
+
+    if(!alra){
+        fetchSubs()
+    }
 
     chrome.cookies.getAll({domain:'onlyfans.com'},all=>{
         console.log('Getting chrome cookies');
         all.forEach(cookie=>{
             allCookies[cookie.name]=cookie.value
         })
-
-        console.log(`Cookies:`,allCookies);
-        console.log(`others:`,others);
-
-        
-
         
 
         if(!alra){
