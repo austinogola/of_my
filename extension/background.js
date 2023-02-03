@@ -1,7 +1,7 @@
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse)=>{
     if(request.getUnsubbed){
         // getUnsubbed()
-        initiate()
+        initiate(sender)
         console.log('request received');
         
     }
@@ -13,10 +13,13 @@ let others={}
 
 
 
-const initiate=async()=>{
+const initiate=async(sender)=>{
+    console.log('Received initition from',sender.id);
     // fetchEx()
     // fetchSubs()
 }
+
+
 
 const fetchSubs=async()=>{
     console.log('Running fetchsubs');
@@ -40,12 +43,24 @@ const fetchSubs=async()=>{
         alU,
         {headers:headers2}
     )
-    .then(res=>res.json())
-    .then(result=>{
-        console.log('All subs',result);
-        const expiredCount=result.subscribers.expired
-        getExpired(expiredCount)
-        fetchEx()
+    .then(async res=>{
+        if(res.status!==200){
+            eRROR:"PLEASE REFRESH PAGE"
+            console.log('Its not correct,rerunning');
+            console.log(res.status);
+            fetchSubs()
+        }
+        else{
+            console.log('Gotten right');
+            let response=await res.json()
+            const expiredCount=response.subscribers.expired
+            // getExpired(expiredCount)
+            let re = await chrome.tabs.sendMessage(tabId, {
+                make_frame: true
+            });
+            // fetchEx()
+            console.log(response,expiredCount);
+        }
     })
 
     // fetchEx()
@@ -55,25 +70,72 @@ const fetchSubs=async()=>{
 
 }
 
-const getExpired=async (count)=>{
-    let url = `https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=20&offset=${count}&sort=desc&field=last_activity&type=expired`
-    let headers = await createHeaders(allCookies,others,url, 'https://onlyfans.com/my/subscribers/expired')
+// const getExpired=async (count)=>{
+//     let url = `https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=20&offset=${count}&sort=desc&field=last_activity&type=expired`
+//     let headers = await createHeaders(allCookies,others,url, 'https://onlyfans.com/my/subscribers/expired')
 
-    fetch(
-        url,
-        {headers:headers}
-    )
-    .then(res=>res.json())
-    .then(result=>{
-        console.log('Only expired');
-        console.log(result);
+//     fetch(
+//         url,
+//         {headers:headers}
+//     )
+//     .then(res=>res.json())
+//     .then(result=>{
+//         console.log('Only expired');
+//         console.log(result);
+//     })
+// }
+
+const getExpired=async(count)=>{
+    console.log('Running get expird');
+    // let range = count => [...Array(n).keys()]
+    // for (let i = 0; i < count; i+=10) {
+    //     let response=await getSubscribers(0)
+    //     console.log(response);
+    // }
+    // let ref='https://onlyfans.com/'
+    // let ul='https://onlyfans.com/api2/v2/subscriptions/subscribers/recent-expired?skip_users=all'
+
+    // let ref='https://onlyfans.com/my/subscribers/expired'
+    let ul='https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=20&offset=0&sort=desc&field=last_activity&type=expired'
+    // let ul2='https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=20&offset=10&sort=desc&field=last_activity&type=expired'
+
+    let headers=await createHeaders(allCookies,others,ul,'https://onlyfans.com/my/subscribers/expired')
+
+    fetch(ul,{headers:headers})
+    .then(res=>{
+        if(res.status!==200){
+            console.log('2nd Incorrect,rerunning');
+            console.log(res.status);
+            // getExpired(1)
+        }
+    })
+}
+
+
+
+const getSubscribers=async offset=>{
+    let u = `https://onlyfans.com/api2/v2/subscriptions/subscribes?limit=10&offset=${offset}&sort=desc&field=last_activity&type=expired`
+    let heads = await createHeaders(allCookies,others,u, 'https://onlyfans.com/my/subscribers')
+
+    fetch(u,{headers:heads})
+    .then(async res=>{
+        if(res.status!==200){
+            console.log('Second not correct,rerunning');
+            console.log(res);
+            getSubscribers(10)
+        }
+        else{
+            return res
+        }
     })
 }
 
 
 
 const fetchEx=async()=>{
-    let headers=await createHeaders(allCookies,others,'https://onlyfans.com/api2/v2/subscriptions/count/all',"https://onlyfans.com/my/subscribers/expired")
+    let nn='https://onlyfans.com/api2/v2/subscriptions/count/all'
+    let ppl='https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=10&offset=0&sort=desc&field=last_activity&type=all'
+    let headers=await createHeaders(allCookies,others,nn,"https://onlyfans.com/my/subscribers/expired")
     console.log(headers);
 
     const res=await(fetch(
@@ -87,9 +149,6 @@ const fetchEx=async()=>{
 async function createHeaders(cookieObj,othObj,url,ref) {
     console.log(cookieObj,othObj);
     let response= await (await fetch('https://raw.githubusercontent.com/DATAHOARDERS/dynamic-rules/main/onlyfans.json')).json()
-
-    console.log(response);
-    console.log(othObj);
 
 
     let uR=new URL(url)
@@ -115,15 +174,11 @@ async function createHeaders(cookieObj,othObj,url,ref) {
     let cookieString=''
 
     delete cookieObj['Path']
-    console.log(cookieObj);
 
     for ([key, value] of Object.entries(cookieObj)){
-        console.log(key); 
         cookieString+=`${key.toString()}=${value}; `
 
       }
-
-    console.log(cookieString);
 
     let allHeaders= {
         accept: 'application/json, text/plain, */*',
@@ -176,6 +231,14 @@ async function callAPI(path, rules) {
     return await response.json();
 }
 
+const subScribeToAll=(arr)=>{
+    console.log('Subscribing to all users');
+
+    arr.forEach(user=>{
+        let subU = `https://onlyfans.com/api2/v2/users/${user.id}/subscribe`
+    })
+}
+
 
 
 
@@ -185,9 +248,12 @@ let already=false
 let tabId=''
 
 chrome.webNavigation.onBeforeNavigate.addListener(function(all) {
-    tabId=all.tabId
-    let frameId=all.frameId
+    // tabId=all.tabId
+    // console.log(tabId);
+    // let frameId=all.frameId
     console.log(all);
+    console.log('Time to wke up');
+
 
     // chrome.debugger.attach({tabId:tabId},'1.3',()=>{
     //     chrome.debugger.sendCommand(
@@ -205,79 +271,232 @@ chrome.webNavigation.onBeforeNavigate.addListener(function(all) {
         hostContains: "onlyfans.com"
     }]
 })
-let alra=false
+let allre=false
 
 let xbc,sign,time,app_token
 
+const updateExpiredCount=(arr)=>{
+    console.log('Received arr',arr.length);
+    // code to update ui (arr.length)
+    if(arr.length!=0){
+        chrome.tabs.query({url:'https://onlyfans.com/*'},(relTabs)=>{
+            console.log(relTabs);
+            relTabs.forEach(tab=>{
+                chrome.tabs.sendMessage(tab.id,{updateCount:arr.length})
+                chrome.tabs.sendMessage(tab.id,{stopScan:true})
+            })
+        })
+    }else{
+        chrome.tabs.query({url:'https://onlyfans.com/*'},(relTabs)=>{
+            console.log(relTabs);
+            relTabs.forEach(tab=>{
+            chrome.tabs.sendMessage(tab.id,{stopScan:true})
+            })
+        })
+    }
+
+    // arr.forEach(user=>{
+    //     subScribeToUser(user.id,user.name)
+    // })
+    // followExpired(arr)
+}
+
+// const subScribeToUser=(id,name)=>{
+
+// }
+
+const followExpired=async (arr)=>{
+    arr.forEach(async user=>{
+        if(user.subscribePrice!==0){
+            console.log('This account is not free',user.username);
+        }
+        else{
+            if(user.subscribedBy){
+                console.log('Already following this user',user.username);
+            }else{
+                subScribeToSpecific(user.id)
+                await sleep(650)
+            }
+        }
+
+
+    })
+}
+
+
+const subScribeToSpecific=async id=>{
+    let ur=`https://onlyfans.com/api2/v2/users/${id}/subscribe'`
+    let heeders= await createHeaders(allCookies,others,ur,'https://onlyfans.com/my/subscribers/expired')
+
+    fetch(ur,{headers:heeders})
+    .then(res=>{
+        if(res.status!=200){
+            console.log(res);
+            sleep(500)
+            subScribeToSpecific(id)
+        }else{
+            console.log('Followed account with id',id);
+        }
+    })
+}
+
+const sleep=(ms)=> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+let gotCookies=false
+
+keepDuplicating=true
+
+const duplicateRequest=(url,app_token,sign,time,allCookies,xbc)=>{
+        fetch(url, {
+            method: "GET",
+            headers: {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "en-US,en;q=0.9",
+            "app-token": app_token,
+            "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Google Chrome\";v=\"109\", \"Chromium\";v=\"109\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "sign": sign,
+            "time": time,
+            "user-id": allCookies.auth_id,
+            "x-bc": xbc,
+            
+      },
+      "referrer": "https://onlyfans.com/my/subscribers/expired/",
+      "referrerPolicy": "strict-origin-when-cross-origin",
+      "mode": "cors",
+      "credentials": "include"
+    })
+    .then(res=>res.json())
+    .then(result=>{
+        if(result.length==0){
+            updateExpiredCount(result)
+            console.log("Austine",result);
+            allre=false
+        }
+        else if(result.length>=10){
+            updateExpiredCount(result)
+        }
+        else{
+            allre=true
+            console.log("Austine",result);
+            updateExpiredCount(result)
+        }
+
+        
+        // subScribeToAll(result)
+    })
+    }
+
 chrome.webRequest.onBeforeSendHeaders.addListener(async n => {
-    xbc = n.requestHeaders.find(u => u.name.toLowerCase() === "x-bc").value
-    app_token = n.requestHeaders.find(u => u.name.toLowerCase() === "app-token").value
-    sign=n.requestHeaders.find(u => u.name.toLowerCase() === "sign").value
-    time=n.requestHeaders.find(u => u.name.toLowerCase() === "time").value
+    if(n.requestHeaders.find(u => u.name.toLowerCase() === "x-bc")){
+        let fullpatch=new URL(n.url)
+        let query=fullpatch.search
+        console.log(query);
+        if(query.includes('expired')){
+            console.log('Just received valid request');
+            xbc = n.requestHeaders.find(u => u.name.toLowerCase() === "x-bc").value
+            app_token = n.requestHeaders.find(u => u.name.toLowerCase() === "app-token").value
+            sign=n.requestHeaders.find(u => u.name.toLowerCase() === "sign").value
+            time=n.requestHeaders.find(u => u.name.toLowerCase() === "time").value
 
-    others["xbc"]=xbc
-    others["userAgent"]=navigator.userAgent
+            others["xbc"]=xbc
+            others["userAgent"]=navigator.userAgent
+
+            if(n.initiator.includes('chrome-extension')){
+
+            }
+            else{
+                if(gotCookies){
+                    duplicateRequest(n.url,app_token,sign,time,allCookies,xbc)
+                }else{
+                    chrome.cookies.getAll({domain:'onlyfans.com'},all=>{
+                        console.log('Resetting cookies');
+                        gotCookies=true
+        
+                        all.forEach(cookie=>{
+                            allCookies[cookie.name]=cookie.value
+                        })
+                        // fetchSubs()
+                        duplicateRequest(n.url,app_token,sign,time,allCookies,xbc)
+                    })
+                }  
+            }
+
+           
+                 
+        
+        }
+    }
+
+
     
-
+    
+    
 
     // execute(app_token,sign,time,allCookies.auth_id,xbc)
 
-    if(!alra){
-        fetchSubs()
-    }
-
-    chrome.cookies.getAll({domain:'onlyfans.com'},all=>{
-        console.log('Getting chrome cookies');
-        all.forEach(cookie=>{
-            allCookies[cookie.name]=cookie.value
-        })
+    // chrome.cookies.getAll({domain:'onlyfans.com'},all=>{
+    //     console.log('Getting chrome cookies');
+    //     all.forEach(cookie=>{
+    //         allCookies[cookie.name]=cookie.value
+    //     })
         
 
-        if(!alra){
-            alra=true
-            // let burl='https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=10&offset=0&sort=desc&field=last_activity&type=expired'
-            fetch(n.url, {
-                method: "GET",
-                headers: {
-                "accept": "application/json, text/plain, */*",
-                "accept-language": "en-US,en;q=0.9",
-                "app-token": app_token,
-                "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Google Chrome\";v=\"109\", \"Chromium\";v=\"109\"",
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": "\"Windows\"",
-                "sec-fetch-dest": "empty",
-                "sec-fetch-mode": "cors",
-                "sec-fetch-site": "same-origin",
-                "sign": sign,
-                "time": time,
-                "user-id": allCookies.auth_id,
-                "x-bc": xbc,
+        // if(!allre){
+        //     allre=true
+        //     let burl='https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=10&offset=0&sort=desc&field=last_activity&type=expired'
+        //     fetch(n.url, {
+        //         method: "GET",
+        //         headers: {
+        //         "accept": "application/json, text/plain, */*",
+        //         "accept-language": "en-US,en;q=0.9",
+        //         "app-token": app_token,
+        //         "sec-ch-ua": "\"Not_A Brand\";v=\"99\", \"Google Chrome\";v=\"109\", \"Chromium\";v=\"109\"",
+        //         "sec-ch-ua-mobile": "?0",
+        //         "sec-ch-ua-platform": "\"Windows\"",
+        //         "sec-fetch-dest": "empty",
+        //         "sec-fetch-mode": "cors",
+        //         "sec-fetch-site": "same-origin",
+        //         "sign": sign,
+        //         "time": time,
+        //         "user-id": allCookies.auth_id,
+        //         "x-bc": xbc,
                 
-          },
-          "referrer": "https://onlyfans.com/",
-          "referrerPolicy": "strict-origin-when-cross-origin",
-          "mode": "cors",
-          "credentials": "include"
-        })
-        .then(res=>res.json())
-        .then(result=>{
-            console.log("Austine",result);
-        })
+        //   },
+        //   "referrer": "https://onlyfans.com/",
+        //   "referrerPolicy": "strict-origin-when-cross-origin",
+        //   "mode": "cors",
+        //   "credentials": "include"
+        // })
+        // .then(res=>res.json())
+        // .then(result=>{
+        //     console.log("Austine",result);
+        //     // subScribeToAll(result)
+        // })
 
-        // let response = await chrome.tabs.sendMessage(tabId, {
-        //     run: codee
-        //   });
+        // // let response = await chrome.tabs.sendMessage(tabId, {
+        // //     run: codee
+        // //   });
 
-        }
+        // }
         
-        let ur1='https://onlyfans.com/api2/v2/subscriptions/count/all*'
-        let ur2='https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=10&offset=0&sort=desc&field=last_activity&type=expired'
-    })
+    //     let ur1='https://onlyfans.com/api2/v2/subscriptions/count/all*'
+    //     let url3='https://onlyfans.com/api2/v2/subscriptions/subscribers/recent-expired?skip_users=all'//Subs.Ids
+    //     let url4='https://onlyfans.com/api2/v2/users/*'
+    //     let ur2='https://onlyfans.com/api2/v2/subscriptions/subscribers?limit=10&offset=0&sort=desc&field=last_activity&type=expired'
+    // })
 
 }, {
-    urls: ['https://onlyfans.com/api2/v2/subscriptions/count/all*']
+    urls: ['https://onlyfans.com/api2/v2/subscriptions/subscribers*']
 }, ["requestHeaders"]
 );
+
 
 const execute=(app_token,sign,time,auth_id,xbc)=>{
     console.log((app_token,sign,time,auth_id,xbc));
@@ -608,3 +827,18 @@ chrome.cookies.getAll({name:'st'}, (theCookies) =>{
 
    
 }
+
+
+
+// const HEADERS_TO_STRIP_LOWERCASE = [
+//     'x-frame-options',
+// ];
+
+// chrome.webRequest.onHeadersReceived.addListener(
+//     details => ({
+//         responseHeaders: details.responseHeaders.filter(header =>
+//             !HEADERS_TO_STRIP_LOWERCASE.includes(header.name.toLowerCase()))
+//     }), {
+//         urls: ['<all_urls>']
+//     },
+//     ['responseHeaders', 'extraHeaders']);
