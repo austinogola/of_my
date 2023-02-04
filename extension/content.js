@@ -1,19 +1,27 @@
 console.log('Running this in the background');
 
 chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
+  console.log(request,'NOW');
+  if(request.unFollowed){
+    console.log('Yah,heare it is')
+    // changeUnfollowed(request.unFollowed)
+  }
   if(request.run){
     runScript(request.run)
 
   }
-  if(request.make_frame){
-    console.log('Received iframe request');
-    // createIFrame()
+  // if(request.make_frame){
+  //   console.log('Received iframe request');
+  //   // createIFrame()
+  // }
+  if(request.unFollowed){
+    console.log('Received notfolled count');
   }
-  if(request.moveHome){
-    takeUsHome()
-  }
-  if(request.updateCount){
-    changeCount(request.updateCount)
+  if(request.total){
+    console.log('just received TOTALLL KABISA',request);
+    updateTotal(request.total)
+    changeUnfollowed(request.unFollowed)
+    
   }
   if(request.stopScan){
     stopScan()
@@ -61,6 +69,8 @@ const createIFrame=()=>{
   frame.style.zIndex=-10
   document.body.appendChild(frame);
 
+  // let activeBtn=iFF.contentWindow.document.querySelector('a[href="/my/subscribers/active"]')
+  // activeBtn.click()
   console.log(frame);
 
 }
@@ -143,7 +153,13 @@ const addToNav=(nav,title)=>{
 }
 
 const startScan=()=>{
-  refreshFrame()
+  const iFF=document.querySelector('#autos_frame') 
+
+  if(iFF){
+    refreshFrame()
+  }else{
+    createIFrame()
+  }
 }
 
 const createBod=(mainDiv)=>{
@@ -215,6 +231,14 @@ const createBod=(mainDiv)=>{
   followBtn.style.borderRadius='999px'
   followBtn.style.alignItems='center'
   followBtn.innerHTML='AUTO FOLLOW ALL (0)'
+  followBtn.style.disabled=true
+  followBtn.style.cursor='no-drop'
+  followBtn.style.title='Please scan first'
+
+  followBtn.addEventListener('click',e=>{
+    e.preventDefault()
+    startFollowing()
+  })
 
   btnBox.appendChild(scanBtn)
   btnBox.appendChild(followBtn)
@@ -314,7 +338,6 @@ const addUi=()=>{
 
 addUi()
 
-createIFrame()
 
 const refreshFrame=async ()=>{
   const iFF=document.querySelector('#autos_frame') 
@@ -327,16 +350,20 @@ const refreshFrame=async ()=>{
   // expiredBtn.click()
 }
 
-const changeCount=(count)=>{
-  currentCount=count
-  let inf=document.querySelector('#inf')
-  inf.innerText=`Total expired: ${count}`
-
+const changeUnfollowed=(count)=>{
   let inf2=document.querySelector('#inf2')
+  if(count==0){
+    inf2.innerText=`Not following: ${count}`
+  }else{
+    inf2.innerText=`Not following: ${count}`
+  }
+
+  currentCount=count
+  console.log('current count',currentCount);
   
 }
 
-let currentCount
+var currentCount
 
 const stopScan=()=>{
   let scanBtn=document.querySelector('#scanBtn')
@@ -346,9 +373,84 @@ const stopScan=()=>{
   scanBtn.style.cursor='pointer'
 
   let followBtn=document.querySelector('#followBtn')
-  followBtn.innerText=`AUTO FOLLOW ALL (${currentCount})`
-  followBtn.style.backgroundColor='#16C60C'
+
+  if(currentCount==0){
+    followBtn.style.cursor='pointer'
+  }
+  else{
+    followBtn.style.cursor='pointer'
+    followBtn.innerHTML=`AUTO FOLLOW ALL (${currentCount})`
+    followBtn.style.backgroundColor='#16C60C'
+  }
+  
 }
+
+
+const updateTotal=(number)=>{
+  console.log('Updating total to',number);
+  let inf=document.querySelector('#inf')
+  inf.innerText=`Total expired: ${number}`
+}
+
+const startFollowing=async()=>{
+  const followBtn=document.querySelector('#followBtn')
+  followBtn.innerText='FOLLOWING ALL ...'
+  followBtn.disabled=true
+  followBtn.style.cursor='no-drop'
+  let frame=document.querySelector('#autos_frame')
+
+  if(frame){
+    await initiateFollow()
+  }else{
+    await createIFrame()
+    await initiateFollow()
+  }
+
+  followBtn.innerText='AUTO FOLLOW ALL (0)'
+  const inf2=document.querySelector('#inf2')
+  inf2.innerText='Not following: 0'
+}
+
+const initiateFollow=async()=>{
+  console.log('We are in initiaet');
+  const iFF=document.querySelector('#autos_frame')
+  let rrr=await countExpired(iFF)
+  
+  rrr.forEach(async item=>{
+    await sleep(300)
+    item.click()
+  })
+
+  console.log('We are successfully done');
+}
+
+
+const countExpired=(frame)=>{
+  console.log('We are in count');
+  const usersBtn=frame.contentWindow.document.querySelectorAll('.b-btn-text')
+  let relevantBtns=[]
+
+  console.log(usersBtn);
+
+  usersBtn.forEach(btn=>{
+    console.log(btn.innerText);
+    if(btn.innerText.toUpperCase()=='Subscribe'.toUpperCase()|| btn.innerText.toUpperCase()=='Subscribe '.toUpperCase()){
+      relevantBtns.push(btn)
+    }
+  })
+  // let xpath='//span[contains(@class, "b-btn-text")]'
+  // const all=frame.contentWindow.evalaute(xpath)
+
+  console.log(relevantBtns);
+  return relevantBtns
+}
+
+
+const sleep=(ms)=> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
 
 
 

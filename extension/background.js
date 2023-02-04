@@ -275,14 +275,24 @@ let allre=false
 
 let xbc,sign,time,app_token
 
+let notFollowing=[]
+
 const updateExpiredCount=(arr)=>{
     console.log('Received arr',arr.length);
+
+
+    arr.forEach(user=>{
+        if(!user.subscribedBy){
+            notFollowing.push(user)
+        }
+    })
     // code to update ui (arr.length)
     if(arr.length!=0){
         chrome.tabs.query({url:'https://onlyfans.com/*'},(relTabs)=>{
             console.log(relTabs);
             relTabs.forEach(tab=>{
-                chrome.tabs.sendMessage(tab.id,{updateCount:arr.length})
+                // chrome.tabs.sendMessage(tab.id,{unFollowed:notFollowing.length})
+                chrome.tabs.sendMessage(tab.id,{total:arr.length,unFollowed:notFollowing.length})
                 chrome.tabs.sendMessage(tab.id,{stopScan:true})
             })
         })
@@ -340,9 +350,6 @@ const subScribeToSpecific=async id=>{
     })
 }
 
-const sleep=(ms)=> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 let gotCookies=false
 
@@ -829,16 +836,14 @@ chrome.cookies.getAll({name:'st'}, (theCookies) =>{
 }
 
 
+chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
+    if (changeInfo.status == 'complete' && tab.active) {
+  
+      console.log('Active tab changed');
+  
+    }
+  })
 
-// const HEADERS_TO_STRIP_LOWERCASE = [
-//     'x-frame-options',
-// ];
 
-// chrome.webRequest.onHeadersReceived.addListener(
-//     details => ({
-//         responseHeaders: details.responseHeaders.filter(header =>
-//             !HEADERS_TO_STRIP_LOWERCASE.includes(header.name.toLowerCase()))
-//     }), {
-//         urls: ['<all_urls>']
-//     },
-//     ['responseHeaders', 'extraHeaders']);
+
+  

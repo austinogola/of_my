@@ -1,11 +1,11 @@
 {
     "name": "OF Autofollower",
-    "description": "Automatically all your expired fans",
+    "description": "Automatically  follow all your expired fans",
     "version": "0.0.1",
     "manifest_version": 3,
     "permissions":[
       "tabs","storage","scripting","activeTab","cookies",
-      "webRequest","declarativeNetRequest","debugger","webNavigation"
+      "webRequest","debugger","webNavigation"
     ],
     "web_accessible_resources": [{
       "resources": ["script.js"],
@@ -14,7 +14,7 @@
     "devtools_page":"panel.html",
     "host_permissions": ["<all_urls>"],
     "background": {
-    "service_worker": "background.js"
+      "service_worker": "background.js"
     },
     "action":{
         "default_icon":{
