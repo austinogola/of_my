@@ -91,8 +91,55 @@ const takeUsHome=()=>{
 
 const createMainDiv=()=>{
   const mainDiv=document.createElement('div')
+  mainDiv.setAttribute('id','mainDiv')
+  const clip=document.createElement('div')
+  clip.setAttribute('id','clip')
+
+  clip.style.height='75px'
+  clip.style.backgroundColor='#6FB4EA'
+  clip.style.width='40px'
+  clip.style.position='absolute'
+  clip.style.left='-15px'
+  clip.style.borderRadius='5px 0px 0px 5px'
+  clip.style.top='300px'
+  clip.style.display='flex'
+  clip.style.justifyContent='center'
+  clip.style.alignItems='center'
+  clip.style.color='white'
+  // clip.innerText='Auto Follower'
+  let clipText=document.createElement('span')
+  clip.innerText='Auto Follower'
+  clipText.style.textOrientation='sideways'
+  clip.style.cursor='pointer'
+  clip.addEventListener('click',e=>{
+    bringMainBack()
+  })
+
+  let back=document.createElement('div')
+  back.setAttribute('id','back')
+  back.style.height='30px'
+  back.style.backgroundColor='#6FB4EA'
+  back.style.width='80px'
+  back.style.position='absolute'
+  back.style.top='0px'
+  back.style.left='0px'
+  back.style.marginBottom='10px'
+  back.style.display='flex'
+  back.style.justifyContent='center'
+  back.style.alignItems='center'
+  back.style.fontSize='30px'
+  back.style.fontWeight='bold'
+  back.style.color='white'
+  back.innerHTML='&#8594;'
+  back.style.cursor='pointer'
+
+  back.addEventListener('click',e=>{
+    takeMainBack()
+  })
+
 
   mainDiv.style.height='400px'
+  mainDiv.style.transition='all .4s'
   mainDiv.style.width='350px'
   mainDiv.style.backgroundColor='#FFFFFF'
   mainDiv.style.position='fixed'
@@ -100,8 +147,11 @@ const createMainDiv=()=>{
   mainDiv.style.borderRadius='5px'
   mainDiv.style.boxShadow = "5px 10px 15px blue"
   mainDiv.style.top='30px'
-  mainDiv.style.right='15px'
+  mainDiv.style.right='10px'
   mainDiv.style.zIndex='100'
+
+  mainDiv.appendChild(clip)
+  mainDiv.appendChild(back)
 
   document.body.appendChild(mainDiv);
 
@@ -115,6 +165,7 @@ const createNav=(mainDiv)=>{
   nav.style.height='60px'
   nav.style.width='100%'
   nav.style.display='flex'
+  nav.style.marginTop='10px'
   nav.style.justifyContent='space-between'
   nav.style.padding='5px'
   nav.style.paddingRight='10px'
@@ -385,6 +436,15 @@ const stopScan=()=>{
   
 }
 
+const takeMainBack=()=>{
+  let mainDiv=document.querySelector('#mainDiv')
+  mainDiv.style.right='-340px'
+}
+
+const bringMainBack=()=>{
+  let mainDiv=document.querySelector('#mainDiv')
+  mainDiv.style.right='-10px'
+}
 
 const updateTotal=(number)=>{
   console.log('Updating total to',number);
