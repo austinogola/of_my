@@ -6,41 +6,10 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
     console.log('Yah,heare it is')
     // changeUnfollowed(request.unFollowed)
   }
-  if(request.run){
-    runScript(request.run)
-
-  }
-  // if(request.make_frame){
-  //   console.log('Received iframe request');
-  //   // createIFrame()
-  // }
   if(request.unFollowed){
     console.log('Received notfolled count');
   }
-  if(request.total){
-    console.log('just received TOTALLL KABISA',request);
-    updateTotal(request.total)
-    changeUnfollowed(request.unFollowed)
-    
-  }
-  if(request.stopScan){
-    stopScan()
-  }
 })
-
-const runScript=(code)=>{
-  // var script = document.createElement('script');
-  // script.textContent = code;
-  // (document.body || document.head || document.documentElement).appendChild(script);
-  // script.remove()
-
-  var s = document.createElement('script');
-  s.src = chrome.runtime.getURL('script.js');
-  s.onload = function() {
-    this.remove();
-  };
-  (document.head || document.documentElement).appendChild(s);
-}
 
 
 chrome.runtime.sendMessage({getUnsubbed: 'true'}, function(response) {
@@ -49,45 +18,6 @@ chrome.runtime.sendMessage({getUnsubbed: 'true'}, function(response) {
 
 let loc=window.location.href
 
-if(loc=='https://onlyfans.com/my/subscriptions/expired?order_field=expire_date/'){
-  console.log('We are good here');
-  const div=document.querySelector('div.g-user-name')
-  console.log(div);
-  console.log('Here too');
-}
-
-const createIFrame=()=>{
-  var frame = document.createElement('iframe');
-  frame.sandbox = 'allow-scripts allow-same-origin allow-forms';
-  // https://onlyfans.com/
-  frame.setAttribute('src','https://onlyfans.com/my/subscribers/expired/');
-  frame.setAttribute('id','autos_frame');
-
-  frame.style.width = "1000px";
-  frame.style.height = "500px";
-  frame.style.position="absolute"
-  frame.style.zIndex=-10
-  document.body.appendChild(frame);
-
-  // let activeBtn=iFF.contentWindow.document.querySelector('a[href="/my/subscribers/active"]')
-  // activeBtn.click()
-  console.log(frame);
-
-}
-
-
-
-const takeUsHome=()=>{
-  const iFF=document.querySelector('#autos_frame')
-
-  if(iFF){
-    console.log('Iff found');
-    iFF.src='https://onlyfans.com/my/subscribers/expired'
-  }
-  else{
-    console.log('Frame not yet created');
-  }
-}
 
 const createMainDiv=()=>{
   const mainDiv=document.createElement('div')
@@ -138,9 +68,9 @@ const createMainDiv=()=>{
   })
 
 
-  mainDiv.style.height='400px'
+  mainDiv.style.height='450px'
   mainDiv.style.transition='all .4s'
-  mainDiv.style.width='350px'
+  mainDiv.style.width='400px'
   mainDiv.style.backgroundColor='#FFFFFF'
   mainDiv.style.position='fixed'
   mainDiv.style.border='1px solid #6FB4EA'
@@ -204,13 +134,15 @@ const addToNav=(nav,title)=>{
 }
 
 const startScan=()=>{
-  const iFF=document.querySelector('#autos_frame') 
+  chrome.runtime.sendMessage({beginScan: 'true'}, function(response) {
+    console.log('Sent signal to start scan');
+  });
+}
 
-  if(iFF){
-    refreshFrame()
-  }else{
-    createIFrame()
-  }
+const startFollowing=()=>{
+  chrome.runtime.sendMessage({startFollowing: 'true'}, function(response) {
+    console.log('Sent signal to begin following');
+  });
 }
 
 const createBod=(mainDiv)=>{
@@ -340,105 +272,199 @@ const createBod=(mainDiv)=>{
 
 }
 
+const makeNewNav=(mainDiv)=>{
+  const nav=document.createElement('div')
+
+  nav.style.height='60px'
+  // nav.style.border='1px solid red'
+  nav.style.position='relative'
+  nav.style.top='30px'
+  nav.style.padding='5px'
+
+  const navWrapper=document.createElement('div')
+  navWrapper.setAttribute('id','navWrapper')
+  navWrapper.style.height='50px'
+  navWrapper.style.borderBottom='2px solid #BBCAE7'
+  navWrapper.style.display='flex'
+  navWrapper.style.justifyContent='space-between'
+
+  nav.appendChild(navWrapper)
+
+  mainDiv.appendChild(nav)
+
+  return navWrapper
+}
+
+
+const addToNewNav=(navWrapper,name)=>{
+  const navItem=document.createElement('div')
+  navItem.setAttribute('class','navItem')
+  navItem.setAttribute('id',name)
+  // navItem.style.display='flex'
+  // navItem.style.alignItems='center'
+  navItem.style.textAlign='center'
+  navItem.style.padding='3px'
+  // navItem.style.color='#6FB4EA'
+  navItem.style.cursor='pointer'
+  // navItem.style.borderBottom='2px solid #6FB4EA'
+
+  navItem.addEventListener('click',e=>{
+    // e.target.style.backgroundColor='#BBCAE7'
+    // let navItems=document.querySelectorAll(".navItem")
+    // navItems.forEach(item=>{
+    //   item.style.backgroundColor='white'
+    // })
+  })
+
+
+  let navImg=document.createElement('img')
+  // navImg.src=chrome.runtime.getURL('/icons/expired-24.png')
+  if(name=='EXPIRED'){
+    navImg.src="https://i.ibb.co/pjXcWPS/expired-16.png"
+  }else if(name=='TEMPLATES'){
+    navImg.src="https://i.ibb.co/rZctzp2/message-24.png"
+  }else if(name=='RANKS'){
+    navImg.src="https://i.ibb.co/gvkyMNG/user-24.png"
+  }else if(name=='AUTOS'){
+    navImg.src="https://i.ibb.co/rtGT42t/template-24.png"
+  }
+  
+
+  navItem.appendChild(navImg)
+
+  let title=document.createElement('p')
+  title.style.fontSize='14px'
+  title.innerText=name
+  navItem.appendChild(title)
+
+  navWrapper.appendChild(navItem)
+
+  return navItem
+}
+
+const addToBody=(mainDiv)=>{
+  const bod=document.createElement('div')
+  bod.setAttribute('id','forExpired')
+
+
+  bod.style.padding='10px'
+  bod.style.position='relative'
+  bod.style.top='30px'
+
+  const title=document.createElement('p')
+  title.style.marginBottom='20px'
+  title.innerText='FOLLOW YOUR EXPIRED FANS'
+
+  bod.appendChild(title)
+
+  const bg=document.createElement('div')
+  bg.style.backgroundColor='#F1F2F4'
+  bg.style.height='150px'
+  bg.style.borderRadius='5px'
+  bg.style.padding='5px'
+
+  let intro=document.createElement('p')
+  intro.style.fontSize='12px'
+  intro.innerText=`Follow people who used to be subscribed to you, but they left - get them back!`
+
+  bod.appendChild(bg)
+
+  bg.appendChild(intro)
+
+  const btnBox=document.createElement('div')
+  // btnBox.style.border='1px solid red'
+  btnBox.style.display='flex'
+  btnBox.style.justifyContent='space-between'
+
+  const scanBtn=document.createElement('button')
+  scanBtn.setAttribute('id','scanBtn')
+  scanBtn.style.height='34px'
+  scanBtn.style.width='150px'
+  scanBtn.style.color='white'
+  scanBtn.style.fontSize='12px'
+  scanBtn.style.backgroundColor='#6FB4EA'
+  scanBtn.style.justifyContent='center'
+  scanBtn.style.marginTop='10px'
+  scanBtn.style.borderRadius='999px'
+  scanBtn.style.alignItems='center'
+  scanBtn.innerHTML='SCAN ALL EXPIRED'
+
+  scanBtn.addEventListener('click',e=>{
+    e.preventDefault()
+    console.log('Clicked scan button');
+    // e.target.innerHTML='SCANNING . . .'
+    // e.target.style.backgroundColor='#B7D9F4'
+    // e.target.disabled=true
+    // e.target.style.cursor='no-drop'
+    startScan()
+    
+  })
+
+  const followBtn=document.createElement('button')
+  followBtn.setAttribute('id','followBtn')
+  followBtn.style.height='34px'
+  followBtn.style.width='150px'
+  followBtn.style.color='white'
+  followBtn.style.fontSize='12px'
+  followBtn.style.backgroundColor='#6FB4EA'
+  followBtn.style.justifyContent='center'
+  followBtn.style.marginTop='10px'
+  followBtn.style.borderRadius='999px'
+  followBtn.style.alignItems='center'
+  followBtn.innerHTML='AUTO FOLLOW ALL (0)'
+  followBtn.style.disabled=true
+  followBtn.style.cursor='pointer'
+  followBtn.style.title='Please scan first'
+
+  followBtn.addEventListener('click',e=>{
+    e.preventDefault()
+    console.log('Clicked autofollow button');
+    startFollowing()
+  })
+
+  btnBox.appendChild(scanBtn)
+  btnBox.appendChild(followBtn)
+
+  bg.appendChild(btnBox)
+
+  mainDiv.appendChild(bod)
+
+  return bod
+
+}
+
 const addUi=()=>{
   
 
   let mainDiv=createMainDiv()
-  let nav=createNav(mainDiv)
 
-  let home=addToNav(nav,'EXPIRED')
+  let nav=makeNewNav(mainDiv)
 
-  let msg=addToNav(nav,'FANS')
-  let smt=addToNav(nav,'TEMPLATES')
-  let bot=addToNav(nav,'AUTOS')
+  let expired=addToNewNav(nav,'EXPIRED')
+  let templates=addToNewNav(nav,'TEMPLATES')
+  let ranks=addToNewNav(nav,'RANKS')
+  let autos=addToNewNav(nav,'AUTOS')
 
+  let mainBody=addToBody(mainDiv)
+  // let nav=createNav(mainDiv)
 
-  let body=createBod(mainDiv)
+  // let home=addToNav(nav,'EXPIRED')
 
-
-  
-
-  // const bod=document.createElement('div')
-  // bod.style.borderBottom='1px solid #F1F2F4'
-  // bod.style.backgroundColor='#F1F2F4'
-  // bod.style.height='100px'
-  // bod.style.width='100%'
-  // bod.style.display='flex'
-  // bod.style.justifyContent='space-around'
-  // bod.style.padding='5px'
-  // bod.style.marginTop='10px'
-
-  
-
-  // mainDiv.appendChild(bod)
-
-  // const tab=document.createElement('div')
-  // tab.style.border='1px solid #6FB4EA'
-  // tab.style.height='60px'
-  // tab.style.width='30%'
-  // tab.style.display='flex'
-  // tab.style.alignItems='center'
-  // tab.style.justifyContent='center'
-
-  // nav.appendChild(tab)
+  // let msg=addToNav(nav,'FANS')
+  // let smt=addToNav(nav,'TEMPLATES')
+  // let bot=addToNav(nav,'AUTOS')
 
 
-  // document.body.appendChild(mainDiv)
- 
+  // let body=createBod(mainDiv)
+
 }
 
 addUi()
 
 
-const refreshFrame=async ()=>{
-  const iFF=document.querySelector('#autos_frame') 
-  iFF.contentWindow.location.reload()
-  // iFF.contentWindow.location.href='https://onlyfans.com/my/subscribers/expired'
-  let activeBtn=iFF.contentWindow.document.querySelector('a[href="/my/subscribers/active"]')
-  // activeBtn.click()
-  // await sleep(800)
-  // let expiredBtn=iFF.contentWindow.document.querySelector('a[href="/my/subscribers/expired"]')
-  // expiredBtn.click()
-}
-
-const changeUnfollowed=(count)=>{
-  let inf2=document.querySelector('#inf2')
-  if(count==0){
-    inf2.innerText=`Not following: ${count}`
-  }else{
-    inf2.innerText=`Not following: ${count}`
-  }
-
-  currentCount=count
-  console.log('current count',currentCount);
-  
-}
-
-var currentCount
-
-const stopScan=()=>{
-  let scanBtn=document.querySelector('#scanBtn')
-  scanBtn.innerHTML='SCAN ALL EXPIRED'
-  scanBtn.style.backgroundColor='#6FB4EA'
-  scanBtn.disabled=false
-  scanBtn.style.cursor='pointer'
-
-  let followBtn=document.querySelector('#followBtn')
-
-  if(currentCount==0){
-    followBtn.style.cursor='pointer'
-  }
-  else{
-    followBtn.style.cursor='pointer'
-    followBtn.innerHTML=`AUTO FOLLOW ALL (${currentCount})`
-    followBtn.style.backgroundColor='#16C60C'
-  }
-  
-}
-
 const takeMainBack=()=>{
   let mainDiv=document.querySelector('#mainDiv')
-  mainDiv.style.right='-340px'
+  mainDiv.style.right='-360px'
 }
 
 const bringMainBack=()=>{
@@ -446,64 +472,6 @@ const bringMainBack=()=>{
   mainDiv.style.right='-10px'
 }
 
-const updateTotal=(number)=>{
-  console.log('Updating total to',number);
-  let inf=document.querySelector('#inf')
-  inf.innerText=`Total expired: ${number}`
-}
-
-const startFollowing=async()=>{
-  const followBtn=document.querySelector('#followBtn')
-  followBtn.innerText='FOLLOWING ALL ...'
-  followBtn.disabled=true
-  followBtn.style.cursor='no-drop'
-  let frame=document.querySelector('#autos_frame')
-
-  if(frame){
-    await initiateFollow()
-  }else{
-    await createIFrame()
-    await initiateFollow()
-  }
-
-  followBtn.innerText='AUTO FOLLOW ALL (0)'
-  const inf2=document.querySelector('#inf2')
-  inf2.innerText='Not following: 0'
-}
-
-const initiateFollow=async()=>{
-  console.log('We are in initiaet');
-  const iFF=document.querySelector('#autos_frame')
-  let rrr=await countExpired(iFF)
-  
-  rrr.forEach(async item=>{
-    await sleep(300)
-    item.click()
-  })
-
-  console.log('We are successfully done');
-}
-
-
-const countExpired=(frame)=>{
-  console.log('We are in count');
-  const usersBtn=frame.contentWindow.document.querySelectorAll('.b-btn-text')
-  let relevantBtns=[]
-
-  console.log(usersBtn);
-
-  usersBtn.forEach(btn=>{
-    console.log(btn.innerText);
-    if(btn.innerText.toUpperCase()=='Subscribe'.toUpperCase()|| btn.innerText.toUpperCase()=='Subscribe '.toUpperCase()){
-      relevantBtns.push(btn)
-    }
-  })
-  // let xpath='//span[contains(@class, "b-btn-text")]'
-  // const all=frame.contentWindow.evalaute(xpath)
-
-  console.log(relevantBtns);
-  return relevantBtns
-}
 
 
 const sleep=(ms)=> {
