@@ -1,11 +1,11 @@
 {
     "name": "OF Autofollower",
     "description": "Automatically  follow all your expired fans",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "manifest_version": 3,
     "permissions":[
-      "tabs","storage","scripting","activeTab","cookies",
-      "webRequest","debugger","webNavigation"
+      "tabs","storage","activeTab","cookies",
+      "webRequest","webNavigation"
     ],
     "web_accessible_resources": [{
       "resources": ["script.js"],

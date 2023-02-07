@@ -108,7 +108,7 @@ const createMainDiv=()=>{
   clip.style.color='white'
   // clip.innerText='Auto Follower'
   let clipText=document.createElement('span')
-  clip.innerText='Auto Follower'
+  // clip.innerText='Auto Follower'
   clipText.style.textOrientation='sideways'
   clip.style.cursor='pointer'
   clip.addEventListener('click',e=>{
