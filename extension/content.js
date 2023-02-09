@@ -11,15 +11,16 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
   }
 })
 
-
-chrome.runtime.sendMessage({getUnsubbed: 'true'}, function(response) {
-  console.log('Sent');
-});
-
 let loc=window.location.href
 
 
 const createMainDiv=()=>{
+  const head=document.querySelector('head')
+  let hLink=document.createElement('link')
+  hLink.rel='stylesheet'
+  hLink.type='text/css'
+  hLink.ref='content.jss'
+  
   const mainDiv=document.createElement('div')
   mainDiv.setAttribute('id','mainDiv')
   const clip=document.createElement('div')
@@ -82,6 +83,8 @@ const createMainDiv=()=>{
 
   mainDiv.appendChild(clip)
   mainDiv.appendChild(back)
+
+  head.appendChild(hLink)
 
   document.body.appendChild(mainDiv);
 
@@ -304,29 +307,48 @@ const addToNewNav=(navWrapper,name)=>{
   // navItem.style.alignItems='center'
   navItem.style.textAlign='center'
   navItem.style.padding='3px'
+  // navItem.style.border='1px solid red'
   // navItem.style.color='#6FB4EA'
   navItem.style.cursor='pointer'
+  if(navItem.id=='EXPIRED'){
+    navItem.style.backgroundColor='#BBCAE7'
+    navItem.style.borderBottom='2px solid #6FB4EA'
+  }
   // navItem.style.borderBottom='2px solid #6FB4EA'
 
-  navItem.addEventListener('click',e=>{
+  navItem.addEventListener('click',e=>{;
+    e.stopPropagation()
     // e.target.style.backgroundColor='#BBCAE7'
-    // let navItems=document.querySelectorAll(".navItem")
-    // navItems.forEach(item=>{
-    //   item.style.backgroundColor='white'
-    // })
+    e.currentTarget.style.backgroundColor='#BBCAE7'
+    let navItems=document.querySelectorAll(".navItem")
+    navItems.forEach(item=>{
+      item.style.backgroundColor='white'
+      item.style.borderBottom='none'
+    })
+    e.currentTarget.style.backgroundColor='#BBCAE7'
+    e.currentTarget.style.borderBottom='2px solid #6FB4EA'
+
+    const bodyItems=document.querySelectorAll('.bodyItem')
+    bodyItems.forEach(item=>{
+      if(item.id==e.currentTarget.id){
+        item.style.display='block'
+      }
+      else{
+        item.style.display='none'
+      }
+    })
   })
 
 
   let navImg=document.createElement('img')
-  // navImg.src=chrome.runtime.getURL('/icons/expired-24.png')
   if(name=='EXPIRED'){
-    navImg.src="https://i.ibb.co/pjXcWPS/expired-16.png"
+    navImg.src=chrome.runtime.getURL('icons/expired-16.png')
   }else if(name=='TEMPLATES'){
-    navImg.src="https://i.ibb.co/rZctzp2/message-24.png"
-  }else if(name=='RANKS'){
-    navImg.src="https://i.ibb.co/gvkyMNG/user-24.png"
-  }else if(name=='AUTOS'){
-    navImg.src="https://i.ibb.co/rtGT42t/template-24.png"
+    navImg.src=chrome.runtime.getURL('icons/message-24.png')
+  }else if(name=='FAN INFO'){
+    navImg.src=chrome.runtime.getURL('icons/user-24.png')
+  }else if(name=='BILLING'){
+    navImg.src=chrome.runtime.getURL('icons/template-24.png')
   }
   
 
@@ -342,90 +364,107 @@ const addToNewNav=(navWrapper,name)=>{
   return navItem
 }
 
-const addToBody=(mainDiv)=>{
+const addToBody=(mainDiv,name,titleText)=>{
   const bod=document.createElement('div')
-  bod.setAttribute('id','forExpired')
+  bod.setAttribute('id',name)
+  bod.setAttribute('class','bodyItem')
 
 
   bod.style.padding='10px'
   bod.style.position='relative'
   bod.style.top='30px'
 
-  const title=document.createElement('p')
+   title=document.createElement('p')
   title.style.marginBottom='20px'
-  title.innerText='FOLLOW YOUR EXPIRED FANS'
+  title.innerText=titleText
 
   bod.appendChild(title)
+  console.log(titleText);
+  if(titleText=='COMING SOON' || titleText=='YOUR BILLING INFO'){
+    bod.style.display='none'
+  }else{
+    console.log('We are in',bod);
+    const bg=document.createElement('div')
+    bg.style.backgroundColor='#F1F2F4'
+    bg.style.height='150px'
+    bg.style.borderRadius='5px'
+    bg.style.padding='5px'
 
-  const bg=document.createElement('div')
-  bg.style.backgroundColor='#F1F2F4'
-  bg.style.height='150px'
-  bg.style.borderRadius='5px'
-  bg.style.padding='5px'
+    let intro=document.createElement('p')
+    intro.style.fontSize='12px'
+    intro.innerText=`Follow people who used to be subscribed to you, but they left - get them back!`
 
-  let intro=document.createElement('p')
-  intro.style.fontSize='12px'
-  intro.innerText=`Follow people who used to be subscribed to you, but they left - get them back!`
+    bg.appendChild(intro)
 
-  bod.appendChild(bg)
+      const btnBox=document.createElement('div')
+    // btnBox.style.border='1px solid red'
+    btnBox.style.display='flex'
+    btnBox.style.justifyContent='space-between'
 
-  bg.appendChild(intro)
+    const scanBtn=document.createElement('button')
+    scanBtn.setAttribute('id','scanBtn')
+    scanBtn.style.height='34px'
+    scanBtn.style.width='150px'
+    scanBtn.style.color='white'
+    scanBtn.style.fontSize='12px'
+    scanBtn.style.backgroundColor='#6FB4EA'
+    scanBtn.style.justifyContent='center'
+    scanBtn.style.marginTop='10px'
+    scanBtn.style.borderRadius='999px'
+    scanBtn.style.alignItems='center'
+    scanBtn.innerHTML='SCAN ALL EXPIRED'
+    scanBtn.addEventListener('click',e=>{
+      e.preventDefault()
+      console.log('Clicked scan button');
+      // e.target.innerHTML='SCANNING . . .'
+      // e.target.style.backgroundColor='#B7D9F4'
+      // e.target.disabled=true
+      // e.target.style.cursor='no-drop'
+      startScan()
+      
+    })
 
-  const btnBox=document.createElement('div')
-  // btnBox.style.border='1px solid red'
-  btnBox.style.display='flex'
-  btnBox.style.justifyContent='space-between'
+      const followBtn=document.createElement('button')
+    followBtn.setAttribute('id','followBtn')
+    followBtn.style.height='34px'
+    followBtn.style.width='150px'
+    followBtn.style.color='white'
+    followBtn.style.fontSize='12px'
+    followBtn.style.backgroundColor='#6FB4EA'
+    followBtn.style.justifyContent='center'
+    followBtn.style.marginTop='10px'
+    followBtn.style.borderRadius='999px'
+    followBtn.style.alignItems='center'
+    followBtn.innerHTML='AUTO FOLLOW ALL (0)'
+    followBtn.style.disabled=true
+    followBtn.style.cursor='pointer'
+    followBtn.style.title='Please scan first'
+    followBtn.addEventListener('click',e=>{
+      e.preventDefault()
+      console.log('Clicked autofollow button');
+      startFollowing()
+    })
+  
+    btnBox.appendChild(scanBtn)
+    btnBox.appendChild(followBtn)
+  
+    bg.appendChild(btnBox)
 
-  const scanBtn=document.createElement('button')
-  scanBtn.setAttribute('id','scanBtn')
-  scanBtn.style.height='34px'
-  scanBtn.style.width='150px'
-  scanBtn.style.color='white'
-  scanBtn.style.fontSize='12px'
-  scanBtn.style.backgroundColor='#6FB4EA'
-  scanBtn.style.justifyContent='center'
-  scanBtn.style.marginTop='10px'
-  scanBtn.style.borderRadius='999px'
-  scanBtn.style.alignItems='center'
-  scanBtn.innerHTML='SCAN ALL EXPIRED'
+    bod.appendChild(bg)
+  }
 
-  scanBtn.addEventListener('click',e=>{
-    e.preventDefault()
-    console.log('Clicked scan button');
-    // e.target.innerHTML='SCANNING . . .'
-    // e.target.style.backgroundColor='#B7D9F4'
-    // e.target.disabled=true
-    // e.target.style.cursor='no-drop'
-    startScan()
-    
-  })
 
-  const followBtn=document.createElement('button')
-  followBtn.setAttribute('id','followBtn')
-  followBtn.style.height='34px'
-  followBtn.style.width='150px'
-  followBtn.style.color='white'
-  followBtn.style.fontSize='12px'
-  followBtn.style.backgroundColor='#6FB4EA'
-  followBtn.style.justifyContent='center'
-  followBtn.style.marginTop='10px'
-  followBtn.style.borderRadius='999px'
-  followBtn.style.alignItems='center'
-  followBtn.innerHTML='AUTO FOLLOW ALL (0)'
-  followBtn.style.disabled=true
-  followBtn.style.cursor='pointer'
-  followBtn.style.title='Please scan first'
+  
 
-  followBtn.addEventListener('click',e=>{
-    e.preventDefault()
-    console.log('Clicked autofollow button');
-    startFollowing()
-  })
+  
 
-  btnBox.appendChild(scanBtn)
-  btnBox.appendChild(followBtn)
+  
 
-  bg.appendChild(btnBox)
+  
+
+  
+
+  
 
   mainDiv.appendChild(bod)
 
@@ -440,12 +479,16 @@ const addUi=()=>{
 
   let nav=makeNewNav(mainDiv)
 
-  let expired=addToNewNav(nav,'EXPIRED')
-  let templates=addToNewNav(nav,'TEMPLATES')
-  let ranks=addToNewNav(nav,'RANKS')
-  let autos=addToNewNav(nav,'AUTOS')
+  let expired=addToNewNav(nav,'FAN INFO')
+  let templates=addToNewNav(nav,'EXPIRED')
+  let ranks=addToNewNav(nav,'BILLING')
+  // let autos=addToNewNav(nav,'AUTOS')
 
-  let mainBody=addToBody(mainDiv)
+  let expiredBody=addToBody(mainDiv,'EXPIRED','FOLLOW YOUR EXPIRED FANS')
+
+  let fanInfoBody=addToBody(mainDiv,'FAN INFO','COMING SOON')
+
+  let billingBody=addToBody(mainDiv,'BILLING','YOUR BILLING INFO')
   // let nav=createNav(mainDiv)
 
   // let home=addToNav(nav,'EXPIRED')

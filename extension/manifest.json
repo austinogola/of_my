@@ -8,7 +8,7 @@
       "webRequest","webNavigation"
     ],
     "web_accessible_resources": [{
-      "resources": ["script.js"],
+      "resources": ["script.js","icons/expired-16.png","icons/message-24.png","icons/user-24.png","icons/template-24.png"],
       "matches": ["<all_urls>"]
     }],
     "devtools_page":"panel.html",
