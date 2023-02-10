@@ -8,10 +8,10 @@
       "webRequest"
     ],
     "web_accessible_resources": [{
-      "resources": ["script.js","icons/expired-16.png","icons/message-24.png","icons/user-24.png","icons/template-24.png"],
-      "matches": ["<all_urls>"]
+      "resources": ["icons/expired-16.png","icons/message-24.png","icons/user-24.png","icons/template-24.png"],
+      "matches": ["*://*.onlyfans.com/*"]
     }],
-    "host_permissions": ["https://onlyfans.com/*"],
+    "host_permissions": ["*://*.onlyfans.com/*"],
     "background": {
       "service_worker": "background.js"
     },
@@ -24,7 +24,7 @@
         }
     },
     "content_scripts":[{
-      "matches":["https://onlyfans.com/*"],
+      "matches":["*://*.onlyfans.com/*"],
       "js":["content.js"]
       }]
   }

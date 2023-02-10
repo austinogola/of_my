@@ -1,25 +1,4 @@
-console.log('Running this in the background');
-
-chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
-  console.log(request,'NOW');
-  if(request.unFollowed){
-    console.log('Yah,heare it is')
-    // changeUnfollowed(request.unFollowed)
-  }
-  if(request.unFollowed){
-    console.log('Received notfolled count');
-  }
-})
-
-let loc=window.location.href
-
-
 const createMainDiv=()=>{
-  const head=document.querySelector('head')
-  let hLink=document.createElement('link')
-  hLink.rel='stylesheet'
-  hLink.type='text/css'
-  hLink.ref='content.jss'
   
   const mainDiv=document.createElement('div')
   mainDiv.setAttribute('id','mainDiv')
@@ -37,10 +16,7 @@ const createMainDiv=()=>{
   clip.style.justifyContent='center'
   clip.style.alignItems='center'
   clip.style.color='white'
-  // clip.innerText='Auto Follower'
-  let clipText=document.createElement('span')
-  // clip.innerText='Auto Follower'
-  clipText.style.textOrientation='sideways'
+
   clip.style.cursor='pointer'
   clip.addEventListener('click',e=>{
     bringMainBack()
@@ -128,12 +104,10 @@ const createBod=(mainDiv)=>{
 
   const btnsDiv=document.createElement('div')
   btnsDiv.style.height='100px'
-  // btnsDiv.style.border='1px solid green'
   btnsDiv.style.display='grid'
   btnsDiv.style.gridTemplateRows='65% 35%'
 
   const btnBox=document.createElement('div')
-  // btnBox.style.border='1px solid red'
   btnBox.style.display='flex'
   btnBox.style.justifyContent='space-between'
 
@@ -188,7 +162,6 @@ const createBod=(mainDiv)=>{
 
 
   const btnInfo=document.createElement('div')
-  // btnInfo.style.border='1px solid blue'
   btnInfo.style.display='flex'
   btnInfo.style.justifyContent='space-between'
   btnInfo.style.paddingLeft='6px'
@@ -234,7 +207,6 @@ const makeNewNav=(mainDiv)=>{
   const nav=document.createElement('div')
 
   nav.style.height='60px'
-  // nav.style.border='1px solid red'
   nav.style.position='relative'
   nav.style.top='30px'
   nav.style.padding='5px'
@@ -258,22 +230,16 @@ const addToNewNav=(navWrapper,name)=>{
   const navItem=document.createElement('div')
   navItem.setAttribute('class','navItem')
   navItem.setAttribute('id',name)
-  // navItem.style.display='flex'
-  // navItem.style.alignItems='center'
   navItem.style.textAlign='center'
   navItem.style.padding='3px'
-  // navItem.style.border='1px solid red'
-  // navItem.style.color='#6FB4EA'
   navItem.style.cursor='pointer'
   if(navItem.id=='EXPIRED'){
     navItem.style.backgroundColor='#BBCAE7'
     navItem.style.borderBottom='2px solid #6FB4EA'
   }
-  // navItem.style.borderBottom='2px solid #6FB4EA'
 
   navItem.addEventListener('click',e=>{;
     e.stopPropagation()
-    // e.target.style.backgroundColor='#BBCAE7'
     e.currentTarget.style.backgroundColor='#BBCAE7'
     let navItems=document.querySelectorAll(".navItem")
     navItems.forEach(item=>{
@@ -329,16 +295,14 @@ const addToBody=(mainDiv,name,titleText)=>{
   bod.style.position='relative'
   bod.style.top='30px'
 
-   title=document.createElement('p')
+  let title=document.createElement('p')
   title.style.marginBottom='20px'
   title.innerText=titleText
 
   bod.appendChild(title)
-  console.log(titleText);
   if(titleText=='COMING SOON' || titleText=='YOUR BILLING INFO'){
     bod.style.display='none'
   }else{
-    console.log('We are in',bod);
     const bg=document.createElement('div')
     bg.style.backgroundColor='#F1F2F4'
     bg.style.height='150px'
@@ -352,7 +316,6 @@ const addToBody=(mainDiv,name,titleText)=>{
     bg.appendChild(intro)
 
       const btnBox=document.createElement('div')
-    // btnBox.style.border='1px solid red'
     btnBox.style.display='flex'
     btnBox.style.justifyContent='space-between'
 
@@ -371,15 +334,11 @@ const addToBody=(mainDiv,name,titleText)=>{
     scanBtn.addEventListener('click',e=>{
       e.preventDefault()
       console.log('Clicked scan button');
-      // e.target.innerHTML='SCANNING . . .'
-      // e.target.style.backgroundColor='#B7D9F4'
-      // e.target.disabled=true
-      // e.target.style.cursor='no-drop'
       startScan()
       
     })
 
-      const followBtn=document.createElement('button')
+    const followBtn=document.createElement('button')
     followBtn.setAttribute('id','followBtn')
     followBtn.style.height='34px'
     followBtn.style.width='150px'
@@ -408,19 +367,6 @@ const addToBody=(mainDiv,name,titleText)=>{
     bod.appendChild(bg)
   }
 
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
   mainDiv.appendChild(bod)
 
   return bod
@@ -434,10 +380,9 @@ const addUi=()=>{
 
   let nav=makeNewNav(mainDiv)
 
-  let expired=addToNewNav(nav,'FAN INFO')
-  let templates=addToNewNav(nav,'EXPIRED')
-  let ranks=addToNewNav(nav,'BILLING')
-  // let autos=addToNewNav(nav,'AUTOS')
+  let fanInfo=addToNewNav(nav,'FAN INFO')
+  let expired=addToNewNav(nav,'EXPIRED')
+  let billing=addToNewNav(nav,'BILLING')
 
   let expiredBody=addToBody(mainDiv,'EXPIRED','FOLLOW YOUR EXPIRED FANS')
 
@@ -459,7 +404,6 @@ const bringMainBack=()=>{
   let mainDiv=document.querySelector('#mainDiv')
   mainDiv.style.right='-10px'
 }
-
 
 
 const sleep=(ms)=> {
