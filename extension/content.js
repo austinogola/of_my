@@ -60,7 +60,6 @@ const createMainDiv=()=>{
   mainDiv.appendChild(clip)
   mainDiv.appendChild(back)
 
-  head.appendChild(hLink)
 
   document.body.appendChild(mainDiv);
 
