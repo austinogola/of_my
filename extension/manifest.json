@@ -4,15 +4,14 @@
     "version": "0.1.0",
     "manifest_version": 3,
     "permissions":[
-      "tabs","storage","activeTab","cookies",
-      "webRequest","webNavigation"
+      "tabs","storage","cookies",
+      "webRequest"
     ],
     "web_accessible_resources": [{
       "resources": ["script.js","icons/expired-16.png","icons/message-24.png","icons/user-24.png","icons/template-24.png"],
       "matches": ["<all_urls>"]
     }],
-    "devtools_page":"panel.html",
-    "host_permissions": ["<all_urls>"],
+    "host_permissions": ["https://onlyfans.com/*"],
     "background": {
       "service_worker": "background.js"
     },

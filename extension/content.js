@@ -91,51 +91,6 @@ const createMainDiv=()=>{
   return mainDiv
 }
 
-const createNav=(mainDiv)=>{
-  
-  const nav=document.createElement('div')
-  nav.style.borderBottom='2px solid #C5E1F6'
-  nav.style.height='60px'
-  nav.style.width='100%'
-  nav.style.display='flex'
-  nav.style.marginTop='10px'
-  nav.style.justifyContent='space-between'
-  nav.style.padding='5px'
-  nav.style.paddingRight='10px'
-  nav.style.paddingLeft='10px'
-
-  mainDiv.appendChild(nav)
-
-  return nav
-}
-
-
-const addToNav=(nav,title)=>{
-  let div=document.createElement('div')
-  div.style.display='flex'
-  div.style.height='40px'
-  div.style.justifyContent='center'
-  div.style.alignItems='center'
-  if(title=='EXPIRED'){
-    div.style.borderBottom='2px solid #4D7DA3'
-    div.style.color='#4D7DA3'
-  }else{
-    div.style.color='#a8d2f2'
-  }
-  
-  div.style.position='relative'
-  div.style.top='16px'
-
-  const p=document.createElement('p')
-  p.innerText=`${title}`
-  
-  div.appendChild(p)
-
-  nav.appendChild(div)
-
-  return div
-}
-
 const startScan=()=>{
   chrome.runtime.sendMessage({beginScan: 'true'}, function(response) {
     console.log('Sent signal to start scan');
@@ -489,16 +444,6 @@ const addUi=()=>{
   let fanInfoBody=addToBody(mainDiv,'FAN INFO','COMING SOON')
 
   let billingBody=addToBody(mainDiv,'BILLING','YOUR BILLING INFO')
-  // let nav=createNav(mainDiv)
-
-  // let home=addToNav(nav,'EXPIRED')
-
-  // let msg=addToNav(nav,'FANS')
-  // let smt=addToNav(nav,'TEMPLATES')
-  // let bot=addToNav(nav,'AUTOS')
-
-
-  // let body=createBod(mainDiv)
 
 }
 

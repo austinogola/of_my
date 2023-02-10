@@ -213,7 +213,7 @@ const createFrame=async()=>{
 //     "resources": ["iframer.html"],
 //     "matches": ["<all_urls>"]
 //   }],
-//   "devtools_page":"./panel.html",
+
 
 const getUnsubbed=async()=>{
     let auth
