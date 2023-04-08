@@ -1,12 +1,21 @@
 {
-    "name": "OF Autofollower",
+    "name": "OF AutofollowerS",
     "description": "Automatically  follow all your expired fans",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "manifest_version": 3,
     "permissions":[
-      "tabs","storage","cookies",
-      "webRequest"
+      "tabs","storage","cookies","activeTab","webRequest","webNavigation","declarativeNetRequest ",
+      "declarativeNetRequestFeedback","declarativeNetRequestWithHostAccess","scripting"
     ],
+    "declarative_net_request":{
+      "rule_resources":[
+        {
+          "id":"rule_1",
+          "enabled":true,
+          "path":"rule.json"
+        }
+      ]
+    },
     "web_accessible_resources": [{
       "resources": ["icons/expired-16.png","icons/message-24.png","icons/user-24.png","icons/template-24.png"],
       "matches": ["*://*.onlyfans.com/*"]
@@ -25,6 +34,7 @@
     },
     "content_scripts":[{
       "matches":["*://*.onlyfans.com/*"],
-      "js":["content.js"]
+      "js":["content.js"],
+      "css":["styles.css"]
       }]
   }

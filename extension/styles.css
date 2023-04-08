@@ -1,0 +1,75 @@
+#parent{
+    height:450px;
+    width:400px;
+    background-color:#FFFFFF;
+    position:fixed;
+    top:30px;
+    right:10px;
+    z-index:100;
+    transition:all .4s;
+    border:1px solid #6FB4EA;
+    border-radius:5px;
+    box-shadow:5px 10px 15px blue;
+    padding:8px;
+}
+
+#profile{
+    height:60px;
+    border:1px solid black;
+    margin-bottom:20px;
+    padding:5px;
+    display: grid;
+    grid-template-columns: 20% 50% 30%;
+}
+#profile>div{
+    height: 100%;
+}
+
+
+#tabParent{
+    display:flex;
+    justify-content:space-between;
+    padding-bottom:2px;
+    border-bottom:2px solid #E1E5E7;
+    height:35px;
+    margin-bottom:10px;
+}
+
+.tablinks{
+    font-size:12px;
+    height:30px;
+    border-bottom:1px solid black;
+    background-color: white;
+    animation: .5s;
+    margin:2px;
+    padding-left:4px;
+    padding-right:4px;
+    position:relative;
+    top:2px;
+}
+.tablinks:hover{
+    background-color: #E3EBF7;
+}
+.tablinks.active{
+    background-color: #E3EBF7;
+    border-bottom: #3B71CA 2px solid;
+}
+
+#name_text{
+    font-size: 13px; 
+}
+#status_text{
+    font-size: 11px;
+}
+
+/* #user_status{
+    font-size: 10px;
+} */
+
+#upgrade_btn{
+    height:20px;
+    font-size: 11px;
+    border: 1px solid #16C60C;
+    border-radius: 2px;
+    display: block;
+}

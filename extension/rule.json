@@ -1,0 +1,11 @@
+[{
+    "id" : 1,
+    "priority": 1,
+    "action" : { "type" : "modifyHeaders" ,"responseHeaders":[
+        {"header":"x-frame-options","operation":"remove"}
+    ]},
+    "condition" : {
+      "domains" : ["onlyfans.com"],
+      "resourceTypes" : ["main_frame","sub_frame","xmlhttprequest","other"]
+    }
+  }]
