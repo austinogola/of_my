@@ -38,16 +38,29 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse)=>{
 
 let listening=true
 
+const sleep=(ms)=> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
 chrome.runtime.onConnect.addListener((port)=>{
     console.log('Conection made',port)
     port.onMessage.addListener(async(message,port)=>{
         if(message.getDetails){
             console.log('Received get details request');
+            let prof_obj=await getProfile()
+            let {id,username}=prof_obj
+            port.postMessage({username:username})
+
+            let status=await getStatus(id)
+            port.postMessage({status:status})
+            // if(typeof prof_obj == 'string'){
+            //     console.log(prof_obj)
+            // }else{
+            //     
+            // }
         }
     })
-}
-    
-  )
+})
 
 let relTab=''
 const beginScan=async()=>{
@@ -56,9 +69,45 @@ const beginScan=async()=>{
     
 }
 
-const beginFollow=()=>{
-    console.log('Beginning Following...');
+const getStatus=(id)=>{
+    return new Promise(async(resolve,reject)=>{
+        let res=await fetch(`http://localhost:5000/extension/init?of_id=${id}`,{
+            method:'GET',
+
+        })
+
+        if (res.status==200){
+            let response=await res.json()
+            resolve(response.plan)
+        }
+        else{
+            console.log('Failed to create user')
+            let response=await res.json()
+            resolve(response.plan)
+        }
+    })
 }
+const getProfile=async()=>{
+    return new Promise(async(resolve,reject)=>{
+        while(!of_id){
+            await sleep(200)
+        }
+
+        resolve({id:of_id,username:of_username})
+        
+    })
+}
+
+const beginFollow=()=>{
+    chrome.tabs.query
+    chrome.tabs.query({url:'*://*.onlyfans.com/*'},tabs=>{
+        tabs.forEach(tabI=>{
+            chrome.tabs.sendMessage(tabI.id,{initFollow:true})
+        })
+    })
+}
+
+
 
 const getExpiredIds=async (count)=>{
     for(let offset=0;offset<count;offset+=20){
@@ -180,6 +229,9 @@ let userAgent=navigator.userAgent
 let auth_id
 let user_id
 
+let of_id
+let of_username
+
 
 if(gotCookies){
     // duplicateRequest(n.url,app_token,sign,time,allCookies,xbc)
@@ -269,6 +321,12 @@ chrome.webRequest.onBeforeSendHeaders.addListener(async n => {
                 // chrome.storage.local.set({ expiredCount: active })
             }
         }
+        if(n.url.includes('/me')){
+            let reqHeaders=n.requestHeaders
+            let profile=await duplicateThis(n.url,reqHeaders)
+            of_id=profile.id
+            of_username=profile.username
+        }
     }
     
                 
@@ -292,8 +350,8 @@ const duplicateThis=async(url,reqHeaders)=>{
         })
 
         if(res.status==200){
-            console.log('Successfully duplicated');
-            listening=false
+            console.log('Successfull DUP');
+            // listening=false
             let response=await res.json()
             resolve(response);
             // let active_count=response.subscribers.active
@@ -302,7 +360,7 @@ const duplicateThis=async(url,reqHeaders)=>{
             // updateCounts(active_count)
         }
         else{
-            resolve('Error duplicating');
+            resolve('Error DUP');
         }
 
     })

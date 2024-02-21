@@ -54,6 +54,9 @@
     background-color: #E3EBF7;
     border-bottom: #3B71CA 2px solid;
 }
+.tabContent{
+    display:none;
+}
 
 #name_text{
     font-size: 13px; 
@@ -72,4 +75,51 @@
     border: 1px solid #16C60C;
     border-radius: 2px;
     display: block;
+}
+
+#select_user{
+    height:30px;
+    /* display: flex;
+    justify-content: space-between;
+    align-items: center; */
+    /* border:1px solid red; */
+}
+
+#users_dd_parent{
+    height:40px;
+    width:120px;
+    background-color: white;
+    border:1px solid #3B71CA;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 5px;
+    padding-right: 5px;
+    cursor: pointer;
+}
+
+#user_dropdown{
+    /* border:1px solid black; */
+    width:90%;
+    cursor: pointer;
+}
+#user_expl{
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#user_div{
+    /* border:1px solid black; */
+}
+#user_div>div{
+    display: grid;
+    grid-template-columns: 30% 70%;
+}
+
+#user_inf_div{
+    border:1px solid black;
+    display: grid;
+    grid-template-columns: 30% 70%;
+    height:70px;
 }

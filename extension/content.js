@@ -1,5 +1,4 @@
 chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
-  console.log(request,'NOW');
 
   if(request.addUi){
     let parent=document.querySelector('#parent')
@@ -28,6 +27,11 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
     expiredAll=request.expiredCounter
     console.log('Expired count is',expiredAll);
   }
+
+  if(request.initFollow){
+    console.log('Initiating following')
+    frameFollow()
+  }
   
 })
 
@@ -41,8 +45,53 @@ const initiateExt=()=>{
   let myPort = chrome.runtime.connect({name:"data_Port"});
   myPort.postMessage({getDetails:true})
   myPort.onMessage.addListener(async(message,port)=>{
-      
+      if(message.username){
+        user_name=message.username
+        makeProfile(user_name,our_status)
+      }
+      if(message.status){
+        our_status=message.status
+        makeProfile(user_name,our_status)
+      }
   })
+}
+
+const frameFollow=async()=>{
+  const the_frame=document.querySelector('#autos_frame')
+
+  let first=the_frame.contentWindow.document.querySelector('span.b-btn-text')
+
+  while(!first){
+    first=the_frame.contentWindow.document.querySelector('span.b-btn-text')
+    await sleep(150)
+  }
+
+  let allSpns=the_frame.contentWindow.document.querySelectorAll('span.b-btn-text')
+  await sleep(150)
+  allSpns=the_frame.contentWindow.document.querySelectorAll('span.b-btn-text')
+  await sleep(300)
+
+  const expSpns=[]
+  const freeExps=[]
+
+  allSpns.forEach(item=>{
+    let innerText=item.innerText.trim().toLowerCase()
+    if(innerText==='subscribe'){
+      expSpns.push(item)
+      if(item.nextElementSibling.innerText.toLowerCase().includes('free')){
+        freeExps.push(item)
+      }
+    }
+  })
+
+  for(let i=0;i<3;i++){
+    await sleep(500)
+    freeExps[i].click()
+  }
+
+  console.log('Finished following');
+  updateButtons2()
+  
 }
 
 
@@ -136,16 +185,14 @@ const updateButtons=(count,target)=>{
   if(count>20){
     console.log('Warning.You have more than 20 expired fans');
     followBtn.innerHTML=`FOLLOW 20 EXPIRED FANS`
-    result.innerHTML=`<p>Finished scan. You have ${count} new expired fans you aren't following! You can follow 20 right now.Click the "FOLLOW" button above to start following them. Don't worry, we'll only follow the free ones</p>`
+    result.innerHTML=`<p>Finished scan. You have ${count} new expired fans you aren't following! You can follow 20 right now.Click the "FOLLOW" button above to start following them.</p>`
 
 
   }else{
     followBtn.innerHTML=`FOLLOW ${count} EXPIRED FANS`
-    result.innerHTML=`<p>Finished scan. You have ${count} new expired fans you aren't following!! Click the "FOLLOW" button above to start following them. Don't worry, we'll only follow the free ones</p>`
+    result.innerHTML=`<p>Finished scan. You have ${count} new expired fans you aren't following!! Click the "FOLLOW" button above to start following them.</p>`
 
   }
-
-  
 
   
 }
@@ -180,6 +227,7 @@ const startScan=async(targ)=>{
 
   while(!expiredAll){
     await sleep(300)
+    console.log('Not YET ready');
   }
 
   updateButtons(expiredAll,targ)
@@ -196,7 +244,21 @@ const startScan=async(targ)=>{
 let xbc
 let user_id
 
-const startFollowing=()=>{
+const updateButtons2=()=>{
+  let targ=document.querySelector('#followBtn')
+  targ.disabled=true
+  targ.style.backgroundColor='#6FB4EA'
+  targ.innerHTML='FOLLOW EXPIRED FANS'
+
+  result=document.querySelector('#result')
+  result.innerHTML=`<p>Followed your expired fans!!p</p>`
+
+}
+
+const startFollowing=(targ)=>{
+  targ.disabled=true
+  targ.style.backgroundColor='#7FFF6D'
+  targ.innerHTML='FOLLOWING EXPIRED...'
   chrome.runtime.sendMessage({startFollowing: 'true'}, function(response) {
     console.log('Sent signal to begin following');
   });
@@ -212,7 +274,7 @@ const makeParent=()=>{
   document.body.appendChild(parent);
 }
 
-const makeProfile=(pic_path,username,status)=>{
+const makeProfile=(username,status,pic_path)=>{
 
   const parent=document.querySelector('#parent')
 
@@ -253,7 +315,7 @@ const makeProfile=(pic_path,username,status)=>{
   let upgradeBtn=document.createElement('button')
   upgradeBtn.setAttribute('id','upgrade_btn')
 
-  if(!status || status=='Free'){
+  if(!status || status=='free'){
     status_text.innerHTML='Free'
     upgradeBtn.innerHTML='UPGRADE NOW'
   }
@@ -284,21 +346,29 @@ const makeProfile=(pic_path,username,status)=>{
   // profile.appendChild(user_status)
   // console.log(profile);
   
-
-  parent.appendChild(profile)
+  if(parent.firstChild){
+    parent.insertBefore(profile, parent.firstChild);
+  }
+  else{
+    parent.appendChild(profile)
+  }
   
 }
 
 const makeTabs=()=>{
   const parent=document.querySelector('#parent')
 
-  let tabs_title=['EXPIRED FANS','NEW FANS','CURRENT','SETTINGS']
+  let tabs_title=['EXPIRED FANS','FAN INFO','PROMO BOT','SETTINGS']
   const tabs=document.createElement('div')
   tabs.setAttribute('id','tabParent')
 
-  tabs_title.forEach(tab=>{
+  tabs_title.forEach((tab,index)=>{
     let tabBtn=document.createElement('button')
     tabBtn.setAttribute('class','tablinks')
+    // tabBtn.setAttribute('id',tab)
+    if(index==0){
+      tabBtn.classList.add('active')
+    }
     tabBtn.innerHTML=tab
   
     tabBtn.addEventListener('click',e=>{
@@ -310,6 +380,7 @@ const makeTabs=()=>{
 
       })
       e.target.classList.add('active')
+      makeContentVisible(tab)
     })
     tabs.appendChild(tabBtn)
   })
@@ -319,11 +390,23 @@ const makeTabs=()=>{
 
 }
 
+const makeContentVisible=(name)=>{
+  const tabContents=document.querySelectorAll('.tabContent')
+
+  tabContents.forEach(item=>{
+    item.style.display='none'
+    if(item.getAttribute('id')==name){
+      item.style.display='block'
+    }
+  })
+}
+
 const makeContent=(text)=>{
   const parent=document.querySelector('#parent')
   
   const tabContent=document.createElement('div')
   tabContent.setAttribute('class','tabContent')
+  tabContent.setAttribute('id',text)
   tabContent.style.cssText=`
     margin-top:10px;
   `
@@ -339,7 +422,8 @@ const makeContent=(text)=>{
   let bodyDiv=document.createElement('div')
 
 
-  if(text=='expired fans'){
+  if(text=='EXPIRED FANS'){
+    tabContent.style.display='block'
     title_text = document.createTextNode("FOLLOW YOUR EXPIRED FANS");
     exp_text=document.createTextNode('Follow people who used to be subscribed to you, but they left - get them back!')
     bodyDiv.style.cssText=`
@@ -377,7 +461,7 @@ const makeContent=(text)=>{
     followBtn.addEventListener('click',e=>{
       e.preventDefault()
       console.log('Clicked Follow button');
-      startFollowing()
+      startFollowing(e.target)
       
     })
 
@@ -398,6 +482,20 @@ const makeContent=(text)=>{
 
 
   }
+  else if(text=='PROMO BOT'){
+    title_text = document.createTextNode("PROMOTE YOUR PAGE AND GET MORE FANS ");
+    exp_text=document.createTextNode('A collection of tools to help you promote and grow your page.Gain more fans at no extra cost to you')
+    bodyDiv.style.cssText=`
+      height:120px;
+      background-color:#F1F2F4;
+      padding-top:10px;
+      `
+  }
+  else if(text=='FAN INFO'){
+    title_text = document.createTextNode("FAN INFO");
+    exp_text=document.createTextNode('Make each of your fans feel special by remembering details about them. Make them feel special and they will reward you.')
+
+  }
 
 
   //text 
@@ -405,6 +503,84 @@ const makeContent=(text)=>{
   tabContent.appendChild(tab_title)
   tab_exp.appendChild(exp_text)
   tabContent.appendChild(tab_exp)
+
+  // if(users_dd_parent){
+  //   tabContent.appendChild(users_dd_parent)
+  // }
+
+  if(text=='FAN INFO'){
+    const select_user=document.createElement('div')
+    select_user.setAttribute('id','select_user')
+
+    let user_expl=document.createElement('p')
+    user_expl.setAttribute('id','user_expl')
+    user_expl.appendChild(document.createTextNode('Select a user by CLICKING A CHAT'))
+    select_user.appendChild(user_expl)
+
+    const user_div=document.createElement('user_div')
+    user_div.setAttribute('id','user_div')
+
+    let fBox=document.createElement('div')
+    let fBox_title=document.createElement('p')
+    fBox_title.appendChild((document.createTextNode('User :')))
+    let fBox_title_value=document.createElement('p')
+    fBox_title_value.appendChild((document.createTextNode('Username here')))
+    fBox.appendChild(fBox_title)
+    fBox.appendChild(fBox_title_value)
+
+    let sBox=document.createElement('div')
+    let sBox_title=document.createElement('p')
+    sBox_title.appendChild((document.createTextNode('Spent :')))
+    let sBox_title_value=document.createElement('p')
+    sBox_title_value.appendChild((document.createTextNode('$0')))
+    sBox.appendChild(sBox_title)
+    sBox.appendChild(sBox_title_value)
+
+    let tBox=document.createElement('div')
+    let tBox_title=document.createElement('p')
+    tBox_title.appendChild((document.createTextNode('Real name :')))
+    let tBox_title_value=document.createElement('p')
+    tBox_title_value.appendChild((document.createTextNode('Humpho')))
+    tBox.appendChild(tBox_title)
+    tBox.appendChild(tBox_title_value)
+
+    let foBox=document.createElement('div')
+    let foBox_title=document.createElement('p')
+    foBox_title.appendChild((document.createTextNode('Birthday :')))
+    let foBox_title_value=document.createElement('p')
+    foBox_title_value.appendChild((document.createTextNode('23/07')))
+    foBox.appendChild(foBox_title)
+    foBox.appendChild(foBox_title_value)
+
+
+    user_div.append(fBox)
+    user_div.append(sBox)
+    user_div.append(tBox)
+    user_div.append(foBox)
+
+    // const users_dd_parent=document.createElement('div')
+    // users_dd_parent.setAttribute('id','users_dd_parent')
+    // users_dd_parent.addEventListener('click',e=>{
+    //   document.querySelector('#user_dropdown').click()
+    // })
+    
+    // const user_dropdown=document.createElement('select')
+    // user_dropdown.setAttribute('id','user_dropdown')
+    // user_dropdown.appendChild(new Option("username1",'username1'))
+    // user_dropdown.appendChild(new Option("username2",'username2'))
+    // users_dd_parent.appendChild(user_dropdown)
+    // let caret=document.createElement('span')
+    // caret.innerHTML='v'
+    // users_dd_parent.appendChild(caret)
+
+    // select_user.appendChild(users_dd_parent)
+    
+
+    tabContent.appendChild(select_user)
+    tabContent.appendChild(user_div)
+
+  }
+
 
   //body
   tabContent.appendChild(bodyDiv)
@@ -417,7 +593,10 @@ const addInterface=()=>{
   makeParent()
   makeProfile()
   makeTabs()
-  makeContent('expired fans')
+  makeContent('EXPIRED FANS')
+  makeContent('PROMO BOT')
+  makeContent('FAN INFO')
+  makeContent('SETTINGS')
   chrome.runtime.sendMessage({update:'Added UI'})
 
 }
